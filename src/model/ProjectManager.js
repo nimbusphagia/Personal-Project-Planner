@@ -30,6 +30,12 @@ class ProjectManager {
         const index = this.getProjectIndexById(id);
         this.#container.splice(index, 1);
     }
+    getTaskById(projectId, activityId, taskId){
+        const project = this.#container[this.getProjectIndexById(projectId)];
+        const activity = project.getActivityById(activityId);
+        const task = activity.getTaskById();
+        return task;
+    }
 }
 
 export default ProjectManager;

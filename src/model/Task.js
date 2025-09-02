@@ -44,6 +44,12 @@ class Task {
     setActivityId(actId) {
         this.#activityId = actId;
     }
+    getProjectColor(){
+        return this.#projectColor;
+    }
+    setProjectColor(color){
+        this.#projectColor = color;
+    }
     getProjectId() {
         return this.#projectId;
     }

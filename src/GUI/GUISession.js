@@ -50,7 +50,7 @@ class GuiSession {
                 division1 = this.createDiv("Tasks");
                 division1.classList.add("section1Container");
                 container1 = division1.querySelector(".sessionTaskContainer");
-                this.populateDiv(this.#sessionTasks.div1, "tasksContainer1", container1);
+                this.populateDiv("div1", "tasksContainer1", container1);
                 break;
             case 2:
                 division1 = this.createDiv("First Half");
@@ -61,8 +61,8 @@ class GuiSession {
                 division2.classList.add("section2Container");
                 container2 = division2.querySelector(".sessionTaskContainer");
 
-                this.populateDiv(this.#sessionTasks.div1, "tasksContainer1", container1);
-                this.populateDiv(this.#sessionTasks.div2, "tasksContainer2", container2);
+                this.populateDiv("div1", "tasksContainer1", container1);
+                this.populateDiv("div2", "tasksContainer2", container2);
 
                 break;
             case 3:
@@ -78,9 +78,9 @@ class GuiSession {
                 division3.classList.add("threewayDiv", "section3Container");
                 container3 = division3.querySelector(".sessionTaskContainer");
 
-                this.populateDiv(this.#sessionTasks.div1, "tasksContainer1", container1);
-                this.populateDiv(this.#sessionTasks.div2, "tasksContainer2", container2);
-                this.populateDiv(this.#sessionTasks.div3, "tasksContainer3", container3);
+                this.populateDiv("div1", "tasksContainer1", container1);
+                this.populateDiv("div2", "tasksContainer2", container2);
+                this.populateDiv("div3", "tasksContainer3", container3);
                 break;
             case 4:
                 division1 = this.createDiv("Section Title");
@@ -99,10 +99,10 @@ class GuiSession {
                 division4.classList.add("section4Container");
                 container4 = division4.querySelector(".sessionTaskContainer");
 
-                this.populateDiv(this.#sessionTasks.div1, "tasksContainer1", container1);
-                this.populateDiv(this.#sessionTasks.div2, "tasksContainer2", container2);
-                this.populateDiv(this.#sessionTasks.div3, "tasksContainer3", container3);
-                this.populateDiv(this.#sessionTasks.div4, "tasksContainer4", container4);
+                this.populateDiv("div1", "tasksContainer1", container1);
+                this.populateDiv("div2", "tasksContainer2", container2);
+                this.populateDiv("div3", "tasksContainer3", container3);
+                this.populateDiv("div4", "tasksContainer4", container4);
                 break;
                 break;
         }
@@ -195,7 +195,7 @@ class GuiSession {
                 break;
         }
     }
-    populateDiv(tasksDiv, divClass, parentContainer) {
+    populateDiv(tasksMemory, divClass, parentContainer) {
         let sessionTasks = parentContainer.querySelector("." + divClass);
         if (!sessionTasks) {
             sessionTasks = document.createElement("div");
@@ -204,23 +204,53 @@ class GuiSession {
         } else {
             sessionTasks.innerHTML = "";
         }
-
-
-        for (const task of tasksDiv) {
-            const taskBtn = document.createElement("button");
-            taskBtn.classList.add("sessionTask");
-            taskBtn.setAttribute("type", "button");
-            taskBtn.textContent = task.getTitle();
-            sessionTasks.appendChild(taskBtn);
-        }
         const addBtn = document.createElement("button");
         addBtn.classList.add("btn", "addTaskBtn");
         addBtn.setAttribute("type", "button");
         addBtn.textContent = "Add Task";
         parentContainer.appendChild(sessionTasks);
-        parentContainer.appendChild(addBtn);
+        parentContainer.parentElement.appendChild(addBtn);
 
-        addBtn.addEventListener("click",()=>this.#taskFinder.renderWindow());
+        addBtn.addEventListener("click", () => { //MOVE IT TO GUICONTROLLER TO USE THE PROJECTMANAGER DIRECTLY
+            this.#taskFinder.renderWindow();
+
+            const container = document.querySelector(".finderContainer");
+            if (!container) return;
+
+            const onClick = (e) => {
+                if (e.target.classList.contains("finderAddSelectedBtn")) {
+                    this.#sessionTasks[tasksMemory] = this.#taskFinder.getSelectedTasks();
+                    this.renderSessionTasks(this.#sessionTasks[tasksMemory], sessionTasks);
+
+                    this.#taskFinder.setSelectedTasks([]);
+                    container.removeEventListener("click", onClick);
+                }
+            };
+
+            container.addEventListener("click", onClick);
+        });
+
+    }
+    colorItem(node, color) {
+        node.style.borderColor = color;
+        node.style.color = color;
+    }
+    renderSessionTasks(tasks, containerNode) {
+        for (const task of tasks) {
+            const taskBtn = document.createElement("button");
+            taskBtn.classList.add("sessionTask");
+            taskBtn.setAttribute("type", "button");
+            taskBtn.textContent = task.getTitle();
+            containerNode.appendChild(taskBtn);
+            this.colorItem(taskBtn, task.getProjectColor());
+        }
+    }
+    changeTaskStatus(task, taskItem, projectManager){
+        const projectId = task.getProjectId();
+        const activityId = task.getActivityId();
+        const taskId = task.getId();
+        const completedTask = projectManager.getTaskById(projectId, activityId, taskId);
+        completedTask.setStatus("completed");
     }
     enableNewBtn() {
         const startBtn = document.querySelector(".sessionStart");

@@ -3,6 +3,7 @@ class GuiTaskFinder {
     #projects;
     #activities;
     #tasks;
+    #selectedTasks;
     #overlay;
     #window;
     #parentContainer;
@@ -11,7 +12,14 @@ class GuiTaskFinder {
         this.#projects = projectManager.getContainer();
         this.#finderCard = document.createElement("div");
         this.#finderCard.classList.add("finderContainer");
+        this.#selectedTasks = [];
         this.#parentContainer = document.querySelector(".sessionContainer");
+    }
+    getSelectedTasks() {
+        return this.#selectedTasks;
+    }
+    setSelectedTasks(tasks) {
+        this.#selectedTasks = tasks;
     }
     renderFinder() {
         this.#finderCard.innerHTML = "";
@@ -22,7 +30,10 @@ class GuiTaskFinder {
         closeBtn.type = "button";
         closeBtn.classList.add("closeFinderBtn", "btn");
         closeBtn.textContent = "x";
-        closeBtn.addEventListener("click", () => this.closeWindow());
+        closeBtn.addEventListener("click", () => {
+            this.#selectedTasks = [];
+            this.closeWindow();
+        });
         utilityBtns.appendChild(closeBtn);
         const content = document.createElement("div");
         content.classList.add("finderContent");
@@ -53,15 +64,10 @@ class GuiTaskFinder {
         content.appendChild(taskParent);
         const btnDiv = document.createElement("div");
         btnDiv.classList.add("finderBtns");
-        /*const quickTaskBtn = document.createElement("button");
-        quickTaskBtn.type = "button";
-        quickTaskBtn.classList.add("createTaskBtn", "btn");
-        quickTaskBtn.textContent = "Quick Task"*/
         const finderAddBtn = document.createElement("button");
         finderAddBtn.type = "button";
         finderAddBtn.classList.add("finderAddBtn");
         finderAddBtn.textContent = "Select a task";
-        //btnDiv.appendChild(quickTaskBtn);
         btnDiv.appendChild(finderAddBtn);
 
         this.#finderCard.appendChild(utilityBtns);
@@ -159,6 +165,11 @@ class GuiTaskFinder {
                 this.colorItem(taskItem, project.getCardColor());
                 taskItem.appendChild(tTitle);
                 tasksNode.appendChild(taskItem);
+                this.showSelected(task, taskItem);
+                taskItem.addEventListener("click", () => {
+                    this.selectTasks(task, taskItem, task.getProjectColor());
+                    this.enableAddBtn();
+                })
             } else {
                 const oldBtn = document.querySelector("#finderNewTaskBtn");
                 if (oldBtn) {
@@ -170,6 +181,11 @@ class GuiTaskFinder {
                 tasksNode.parentElement.appendChild(taskItem);
                 taskItem.addEventListener("click", () => console.log(project.getId()));
             }
+        }
+    }
+    showSelected(task, taskItem) {
+        if (this.#selectedTasks.includes(task)) {
+            this.colorSelectedItem(taskItem, task.getProjectColor());
         }
     }
     colorItem(node, color) {
@@ -194,5 +210,59 @@ class GuiTaskFinder {
             btnAct.remove();
         }
     }
+    colorSelectedItem(node, color, selected = false) {
+        if (selected == true) {
+            node.style.backgroundColor = "white";
+            node.style.color = color;
+        } else {
+            node.style.backgroundColor = color;
+            node.style.color = "white";
+        }
+
+    }
+    selectTasks(task, node, color) {
+        if (this.#selectedTasks.includes(task)) {
+            this.#selectedTasks = this.#selectedTasks.filter(item => item !== task);
+            this.colorSelectedItem(node, color, true);
+        } else {
+            this.#selectedTasks.push(task);
+            this.colorSelectedItem(node, color);
+        }
+    }
+    enableAddBtn() {
+        const container = document.querySelector(".finderAddBtn")?.parentElement
+            || document.querySelector(".finderAddSelectedBtn")?.parentElement;
+
+        if (!container) return; // No container found
+
+        if (this.#selectedTasks.length > 0) {
+            // Check if active button already exists
+            if (!document.querySelector(".finderAddSelectedBtn")) {
+                const oldBtn = document.querySelector(".finderAddBtn");
+                if (oldBtn) oldBtn.remove();
+
+                const activeBtn = document.createElement("button");
+                activeBtn.setAttribute("type", "button");
+                activeBtn.classList.add("btn", "finderAddSelectedBtn");
+                activeBtn.textContent = "Add Selected Tasks"; // or icon
+                container.appendChild(activeBtn);
+                activeBtn.addEventListener("click", () => this.closeWindow());
+            }
+        } else {
+            // Check if disabled button already exists
+            if (!document.querySelector(".finderAddBtn")) {
+                const oldBtn = document.querySelector(".finderAddSelectedBtn");
+                if (oldBtn) oldBtn.remove();
+
+                const disabledBtn = document.createElement("button");
+                disabledBtn.setAttribute("type", "button");
+                disabledBtn.classList.add("btn", "finderAddBtn");
+                disabledBtn.textContent = "Add"; // or icon
+                container.appendChild(disabledBtn);
+            }
+        }
+    }
+
+
 }
 export default GuiTaskFinder;

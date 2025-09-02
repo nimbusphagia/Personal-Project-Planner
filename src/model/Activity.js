@@ -9,6 +9,7 @@ class Activity {
     #status;
     #id;
     #projectId;
+    #projectColor;
     static #nextId = 1;
     constructor(title, priority, description, tasks = []) {
         this.#title = title;
@@ -26,7 +27,12 @@ class Activity {
     setTitle(title) {
         this.#title = title;
     }
-
+    getColor() {
+        return this.#projectColor;
+    }
+    setColor(color) {
+        this.#projectColor = color;
+    }
     getPriority() {
         return this.#priority;
     }
@@ -75,9 +81,10 @@ class Activity {
         return `AC${String(rawNumber).padStart(4, '0')}`;
     }
     addTask(task) {
-        this.#tasks.push(task);
         task.setActivityId(this.#id);
         task.setProjectId(this.#projectId);
+        task.setProjectColor(this.#projectColor);
+        this.#tasks.push(task);
         this.addBtnTask();
     }
     getTaskById(taskId) {

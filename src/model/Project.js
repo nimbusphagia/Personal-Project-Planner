@@ -115,6 +115,7 @@ class Project {
 
     addActivity(activity) {
         activity.setProjectId(this.#id);
+        activity.setColor(this.#cardColor);
         this.#activities.push(activity);
         this.addBtnActivity();
     }
