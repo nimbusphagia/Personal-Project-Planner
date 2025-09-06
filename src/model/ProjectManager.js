@@ -33,7 +33,7 @@ class ProjectManager {
     getTaskById(projectId, activityId, taskId){
         const project = this.#container[this.getProjectIndexById(projectId)];
         const activity = project.getActivityById(activityId);
-        const task = activity.getTaskById();
+        const task = activity.getTaskById(taskId);
         return task;
     }
 }

@@ -17,7 +17,6 @@ class GuiSession {
         this.#taskFinder = new GuiTaskFinder(projectManager);
         this.#card = document.createElement("div");
         this.#card.classList.add("activeSession");
-        this.enableNewBtn();
     }
     //GET SET
     getNumDivs() {
@@ -31,6 +30,9 @@ class GuiSession {
     }
     setTaskFinder(taskFinder) {
         this.#taskFinder = taskFinder;
+    }
+    getSessionContainer() {
+        return this.#sessionContainer;
     }
     //METHODS
     emptySession() {
@@ -235,27 +237,32 @@ class GuiSession {
         node.style.borderColor = color;
         node.style.color = color;
     }
+    colorTaskStatus(taskItem, taskObj) {
+        if (taskItem.classList.contains("Completed")) {
+            taskItem.style.backgroundColor = taskObj.getProjectColor();
+            taskItem.style.color = "white";
+        }
+        if (taskItem.classList.contains("Ongoing")) {
+            taskItem.style.backgroundColor = "white";
+            taskItem.style.color = taskObj.getProjectColor();
+        }
+    }
     renderSessionTasks(tasks, containerNode) {
         for (const task of tasks) {
             const taskBtn = document.createElement("button");
-            taskBtn.classList.add("sessionTask");
+            taskBtn.classList.add("sessionTask", task.getStatus());
+            taskBtn.id = task.getProjectId() + "-" + task.getActivityId() + "-" + task.getId(); //add id to tasks
             taskBtn.setAttribute("type", "button");
             taskBtn.textContent = task.getTitle();
             containerNode.appendChild(taskBtn);
             this.colorItem(taskBtn, task.getProjectColor());
+            this.colorTaskStatus(taskBtn, task);
         }
-    }
-    changeTaskStatus(task, taskItem, projectManager){
-        const projectId = task.getProjectId();
-        const activityId = task.getActivityId();
-        const taskId = task.getId();
-        const completedTask = projectManager.getTaskById(projectId, activityId, taskId);
-        completedTask.setStatus("completed");
     }
     enableNewBtn() {
         const startBtn = document.querySelector(".sessionStart");
         startBtn.addEventListener("click", () => {
-            this.promptDivisions(startBtn)
+            this.promptDivisions()
         })
     }
     startSession() {
@@ -264,7 +271,7 @@ class GuiSession {
         this.#sessionContainer.appendChild(this.#card);
         this.applyDivStyles();
     };
-    promptDivisions(startBtn) {
+    promptDivisions() {
         const promptWindow = document.createElement("div");
         promptWindow.classList.add("sessionStart", "promptWindow");
         const firstOption = document.createElement("div");

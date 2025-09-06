@@ -3,7 +3,10 @@ import ActivityCard from "../GUI/ActivityCard";
 import SessionPopUp from "../GUI/SessionPopUp";
 import Project from "../model/Project";
 import Activity from "../model/Activity";
+import Task from "../model/Task";
 import GuiSession from "../GUI/GuiSession";
+import ProjectManager from "../model/ProjectManager";
+
 
 class GuiController {
     #projectManager;
@@ -12,11 +15,12 @@ class GuiController {
     #currentCard;
     #session;
 
-    constructor(projectManager) {
-        this.#projectManager = projectManager;
+    constructor() {
+        this.#projectManager = new ProjectManager();
+        this.startMockContent();
         this.#projectsMenu = document.querySelector(".sbBody");
-        this.#projects = projectManager.getContainer();
-        this.#session = new GuiSession("", projectManager);
+        this.#projects = this.#projectManager.getContainer();
+        this.#session = new GuiSession("", this.#projectManager);
         document.querySelector(".sbBtnNew").addEventListener("click", () => { this.createNewProject() });
     }
     getCurrentCard() {
@@ -40,6 +44,41 @@ class GuiController {
             const pCard = this.createCard("project", p);
             pDiv.addEventListener("click", () => this.showCard("project", pCard));
         }
+    }
+    startMockContent() {
+        const mockProject1 = new Project("Title", "author", "beginning", "end", "Long ass description about super cool project...", [], "#362ff1ff");
+        const mockProject2 = new Project("Punk rock title", "author", "beginning", "end", "Long ass description about kinda lame project...", [], "#f12f46ff");
+        const mockProject3 = new Project("Very serious project", "author", "beginning", "end", "Long ass description about super serious project...", [], "#fb993eff");
+        const mockActivity1 = new Activity("Short a", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity2 = new Activity("Looong mock activity", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity3 = new Activity("Mock activity 3", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity4 = new Activity("Mock activity 4", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity5 = new Activity("Short a", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity6 = new Activity("Looong mock activity", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity7 = new Activity("Mock activity 3", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity8 = new Activity("Mock activity 4", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockTask1 = new Task("Try hard!");
+        const mockTask2 = new Task("Try harder!");
+        const mockTask3 = new Task("Try harderer!");
+        const mockTask4 = new Task("You've tried enough...");
+
+        mockProject1.addActivity(mockActivity1);
+        mockProject1.addActivity(mockActivity2);
+        mockProject1.addActivity(mockActivity3);
+        mockProject1.addActivity(mockActivity4);
+        mockProject2.addActivity(mockActivity5);
+        mockProject2.addActivity(mockActivity6);
+        mockProject2.addActivity(mockActivity7);
+        mockProject2.addActivity(mockActivity8);
+        mockActivity2.addTask(mockTask1);
+        mockActivity2.addTask(mockTask2);
+        mockActivity5.addTask(mockTask3);
+        mockActivity5.addTask(mockTask4);
+
+
+        this.#projectManager.addProject(mockProject1);
+        this.#projectManager.addProject(mockProject2);
+        this.#projectManager.addProject(mockProject3);
     }
     createCard(type, object) {
         let card;
@@ -138,13 +177,54 @@ class GuiController {
                     console.log(task);
                     btn.style.color = "#ffffff";
                     btn.style.backgroundColor = this.getProjectColor(projectId);
-                }else if (task.getStatus() == "Completed") {
+                } else if (task.getStatus() == "Completed") {
                     task.setStatus("Ongoing");
                     console.log(task);
                     btn.style.color = this.getProjectColor(projectId);
                     btn.style.backgroundColor = "transparent";
                 }
             });
+        }
+    }
+    changeTaskStatus(taskItem) {
+        const ids = taskItem.id.split("-");
+        const task = this.#projectManager.getTaskById(ids[0], ids[1], ids[2]);
+
+        if (task.getStatus() === "Completed") {
+            task.setStatus("Ongoing");
+            taskItem.classList.add("Ongoing");
+            taskItem.classList.remove("Completed");
+        } else if (task.getStatus() === "Ongoing") {
+            task.setStatus("Completed");
+            taskItem.classList.add("Completed");
+            taskItem.classList.remove("Ongoing");
+        }
+
+        this.colorTaskStatus(taskItem, task);
+        console.log(task);
+    }
+
+    enableSession() {
+        this.#session.enableNewBtn();
+        const sessionContainer = document.querySelector(".sessionContainer");
+        sessionContainer.addEventListener("click", (e) => {
+            const container = document.querySelector(".sessionTaskContainer");
+            if (!container) {
+                return;
+            }
+            if (e.target.classList.contains("sessionTask")) {
+                this.changeTaskStatus(e.target);
+            }
+        });
+    }
+    colorTaskStatus(taskItem, taskObj) {
+        if (taskItem.classList.contains("Completed")) {
+            taskItem.style.backgroundColor = taskObj.getProjectColor();
+            taskItem.style.color = "white";
+        }
+        if (taskItem.classList.contains("Ongoing")) {
+            taskItem.style.backgroundColor = "white";
+            taskItem.style.color = taskObj.getProjectColor();
         }
     }
 }
