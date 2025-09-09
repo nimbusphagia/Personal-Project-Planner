@@ -36,6 +36,12 @@ class ProjectManager {
         const task = activity.getTaskById(taskId);
         return task;
     }
+    getProjectById(projectId){
+        const index = this.getProjectIndexById(projectId);
+        if(index){
+            return this.#container[index];
+        }
+    }
 }
 
 export default ProjectManager;

@@ -1,23 +1,17 @@
-class ActivityCard {
+class TaskCard {
     #title;
-    #priority;
-    #description;
-    #tasks;
     #status;
     #hexColor;
     #id;
     #card;
-    constructor(activity) {
-        this.#title = activity.getTitle();
-        this.#priority = activity.getPriority();
-        this.#description = activity.getDescription();
-        this.#tasks = activity.getTasks();
-        this.#status = activity.getStatus();
-        this.#hexColor = activity.getColor();
-        this.#id = activity.getId();
+    constructor(task) {
+        this.#title = task.getTitle();
+        this.#status = task.getStatus();
+        this.#hexColor = task.getProjectColor();
+        this.#id = task.getId();
         this.#card = document.createElement("div");
-        this.#card.classList.add("activityContent");
-        this.#card.id = activity.getProjectId() + "-" + this.#id;
+        this.#card.classList.add("taskContent");
+        this.#card.id = task.getProjectId() + "-" + task.getActivityId() + "-" + this.#id;
         this.populateDiv();
     }
     getCard() {
@@ -27,36 +21,21 @@ class ActivityCard {
         this.#card = card;
     }
     populateDiv() {
-        const titleInput = this.createInputNode(["activityTitle", "styledInput"], "activityTitle", this.#title, this.#card, true);
-        const priorityInput = this.createInputNode(["activityPriority", "styledInput"], "activityPriority", this.#priority, this.#card, true);
-        const descriptionArea = this.createInputNode(["activityDescription", "styledInput"], "activityDescription", this.#description, this.#card, true, true);
-        this.applyStyles(descriptionArea, true);
-
-        const tasksDisplay = document.createElement("div");
-        tasksDisplay.classList.add("activityTasksParent");
-        const tasksDiv = document.createElement("div");
-        tasksDiv.classList.add("activityTasksContainer");
-
-        //render Tasks
-        for (const t of this.#tasks) {
-            this.renderTask(t, tasksDiv);
-        }
-        tasksDisplay.appendChild(tasksDiv);
-        this.#card.appendChild(tasksDisplay);
+        const titleInput = this.createInputNode(["taskTitle", "styledInput"], "taskTitle", this.#title, this.#card, true);
 
         const btnContainer = document.createElement("div");
-        btnContainer.classList.add("activityBtnContainer");
+        btnContainer.classList.add("taskBtnContainer");
         this.#card.appendChild(btnContainer);
 
         const deleteBtn = document.createElement("button");
         deleteBtn.setAttribute("type", "button");
-        deleteBtn.classList.add("activityDeleteBtn", "btn");
+        deleteBtn.classList.add("taskDeleteBtn", "btn");
         deleteBtn.textContent = "Delete";
         btnContainer.appendChild(deleteBtn);
 
         const completeBtn = document.createElement("button");
         completeBtn.setAttribute("type", "button");
-        completeBtn.classList.add("activityCompleteBtn", "btn", "hover");
+        completeBtn.classList.add("taskCompleteBtn", "btn", "hover");
         completeBtn.textContent = "Mark as complete";
         btnContainer.appendChild(completeBtn);
     }
@@ -127,13 +106,5 @@ class ActivityCard {
             node.style.color = this.#hexColor;
         }
     }
-    renderTask(task, container) {
-        const taskDiv = document.createElement("div");
-        taskDiv.classList.add("activityTask", "btn");
-        taskDiv.id = task.getProjectId() + "-" + task.getActivityId() + "-" + task.getId();
-        taskDiv.textContent = task.getTitle();
-
-        container.appendChild(taskDiv);
-    }
 }
-export default ActivityCard;
+export default TaskCard;

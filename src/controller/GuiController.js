@@ -1,5 +1,6 @@
 import ProjectCard from "../GUI/ProjectCard";
 import ActivityCard from "../GUI/ActivityCard";
+import TaskCard from "../GUI/TaskCard";
 import SessionPopUp from "../GUI/SessionPopUp";
 import Project from "../model/Project";
 import Activity from "../model/Activity";
@@ -29,6 +30,11 @@ class GuiController {
     setCurrentCard(card) {
         this.#currentCard = card;
     }
+    start() {
+        this.renderMenuContent();
+        this.enableSession();
+        this.enableInput();
+    }
     renderMenuContent() {
         this.#projectsMenu.innerHTML = "";
         for (const p of this.#projects) {
@@ -49,14 +55,14 @@ class GuiController {
         const mockProject1 = new Project("Title", "author", "beginning", "end", "Long ass description about super cool project...", [], "#362ff1ff");
         const mockProject2 = new Project("Punk rock title", "author", "beginning", "end", "Long ass description about kinda lame project...", [], "#f12f46ff");
         const mockProject3 = new Project("Very serious project", "author", "beginning", "end", "Long ass description about super serious project...", [], "#fb993eff");
-        const mockActivity1 = new Activity("Short a", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity2 = new Activity("Looong mock activity", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity3 = new Activity("Mock activity 3", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity4 = new Activity("Mock activity 4", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity5 = new Activity("Short a", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity6 = new Activity("Looong mock activity", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity7 = new Activity("Mock activity 3", "ongoing", "This activity focuses on doing stuff about the project", []);
-        const mockActivity8 = new Activity("Mock activity 4", "ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity1 = new Activity("Short a", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity2 = new Activity("Looong mock activity", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity3 = new Activity("Mock activity 3", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity4 = new Activity("Mock activity 4", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity5 = new Activity("Short a", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity6 = new Activity("Looong mock activity", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity7 = new Activity("Mock activity 3", "Ongoing", "This activity focuses on doing stuff about the project", []);
+        const mockActivity8 = new Activity("Mock activity 4", "Ongoing", "This activity focuses on doing stuff about the project", []);
         const mockTask1 = new Task("Try hard!");
         const mockTask2 = new Task("Try harder!");
         const mockTask3 = new Task("Try harderer!");
@@ -89,6 +95,8 @@ class GuiController {
             case "activity":
                 card = new ActivityCard(object);
                 break;
+            case "task":
+                card = new TaskCard(object);
         }
 
         return card;
@@ -99,7 +107,7 @@ class GuiController {
             case "project":
                 popUp = new SessionPopUp("75%", "80%", card.getCard(), "projectCard", card.getHexColor());
                 popUp.renderWindow();
-                this.enableProjectDelete();
+                document.querySelector(".projectDeleteBtn").addEventListener("click", () => popUp.closeWindow());//CLOSE IF DELETED
                 const activityBtns = document.querySelectorAll(".projectActivity");
                 this.enableActivities(activityBtns);
                 break;
@@ -121,6 +129,11 @@ class GuiController {
                     document.querySelector(".activityCompleteBtn").style.borderColor = cardColor;
                 }
                 break;
+            case "task":
+                const idList = id.split("-");
+                console.log(idList);
+                const taskPopUp = popUp = new SessionPopUp("20%", "30%", card.getCard(), "taskCard", this.getProjectColor(idList[0]));
+                popUp.renderWindow();
         }
 
     }
@@ -134,14 +147,10 @@ class GuiController {
         this.showCard("project", this.createCard("project", emptyProject));
         this.renderMenuContent();
     }
-    enableProjectDelete() {
-        document.querySelector(".projectDeleteBtn").addEventListener("click", () => {
-            const projectId = document.querySelector(".projectContent").id;
-            console.log(projectId);
-            this.#projectManager.deleteProjectById(projectId);
-            this.renderMenuContent();
-            console.log(this.#projectManager.getContainer());
-        });
+    createNewActivity(project) {
+        const emptyActivity = new Activity("Title", "Casual", "What does this activity accomplish?", []);
+        project.addActivity(emptyActivity);
+        this.showCard("activity", this.createCard("activity", emptyActivity));
     }
     getProjectColor(projectId) {
         const index = this.#projectManager.getProjectIndexById(projectId);
@@ -164,26 +173,17 @@ class GuiController {
     enableTasks(btns, projectId, activityId) {
         for (const btn of btns) {
             btn.style.borderColor = this.getProjectColor(projectId);
-            const taskId = btn.id;
+            const ids = btn.id.split("-");
+            const taskId = ids[2];
             if (taskId == "BTN") {
                 return
             }
             const pIndex = this.#projectManager.getProjectIndexById(projectId);
             const activity = this.#projects[pIndex].getActivityById(activityId);
-            const task = activity.getTaskById(btn.id);
-            btn.addEventListener("click", () => {
-                if (task.getStatus() == "Ongoing") {
-                    task.setStatus("Completed");
-                    console.log(task);
-                    btn.style.color = "#ffffff";
-                    btn.style.backgroundColor = this.getProjectColor(projectId);
-                } else if (task.getStatus() == "Completed") {
-                    task.setStatus("Ongoing");
-                    console.log(task);
-                    btn.style.color = this.getProjectColor(projectId);
-                    btn.style.backgroundColor = "transparent";
-                }
-            });
+            const task = activity.getTaskById(taskId);
+            const tCard = this.createCard("task", task);
+            this.colorTaskStatus(btn, task);
+            btn.addEventListener("click", () => this.showCard("task", tCard, btn.id));
         }
     }
     changeTaskStatus(taskItem) {
@@ -201,6 +201,7 @@ class GuiController {
         }
 
         this.colorTaskStatus(taskItem, task);
+        this.renderMenuContent();
         console.log(task);
     }
 
@@ -227,5 +228,104 @@ class GuiController {
             taskItem.style.color = taskObj.getProjectColor();
         }
     }
+    enableInput() {
+        document.body.addEventListener("click", (e) => {
+            const objectCard = document.querySelector("#sessionWindow");
+            if (!objectCard) return;
+
+            const nodeId = objectCard.children[1]?.id;
+            if (!nodeId) return;
+
+            const [projectId, activityId, taskId] = nodeId.split("-");
+            let currentObject = null;
+
+            const project = projectId && this.#projectManager.getProjectById(projectId);
+            if (!project) return;
+
+            currentObject = project;
+
+            if (activityId) {
+                const activity = project.getActivityById(activityId);
+                if (!activity) return;
+
+                currentObject = activity;
+
+                if (taskId) {
+                    const task = activity.getTaskById(taskId);
+                    if (!task) return;
+
+                    currentObject = task;
+                }
+            }
+            //AFTER FINDING CURRENTOBJECT
+            switch (true) {
+                case currentObject instanceof Project:
+                    // project-specific logic
+                    objectCard.addEventListener("input", (e) => {
+                        const input = e.target;
+                        if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
+                            if (input.classList.contains("projectTitle")) {
+                                currentObject.setTitle(input.value);
+                            } else if (input.classList.contains("projectAuthor")) {
+                                currentObject.setAuthor(input.value);
+                            } else if (input.classList.contains("projectStart")) {
+                                currentObject.setBeginningDate(input.value);
+                            } else if (input.classList.contains("projectEnd")) {
+                                currentObject.setEndDate(input.value);
+                            } else if (input.classList.contains("projectColor")) {
+                                currentObject.setCardColor(input.value);
+                            } else if (input.classList.contains("projectDescription")) {
+                                currentObject.setDescription(input.value);
+                            }
+                        }
+                        this.renderMenuContent();
+                    });
+                    //ENABLE PROJECT BUTTONS
+                    objectCard.addEventListener("click", (e) => {
+                        const btn = e.target;
+                        if (btn.tagName === "BUTTON") {
+                            if (btn.classList.contains("projectDeleteBtn")) {
+                                this.#projectManager.deleteProjectById(projectId);
+                                this.renderMenuContent();
+                            } else if (btn.classList.contains("projectCompleteBtn")) {
+                                e.stopPropagation(); // 🔑 prevents duplicate handlers higher up
+                                const status = currentObject.getStatus();
+                                currentObject.setStatus(status === "Ongoing" ? "Completed" : "Ongoing");
+                                console.log("New status:", currentObject.getStatus());
+                            }
+                        }
+                    });
+
+                    break;
+
+                case currentObject instanceof Activity:
+                    // activity-specific logic
+                    objectCard.addEventListener("input", (e) => {
+                        const input = e.target;
+                        if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
+                            if (input.classList.contains("activityTitle")) {
+                                currentObject.setTitle(input.value);
+                            } else if (input.classList.contains("activityPriority")) {
+                                currentObject.setAuthor(input.value);
+                            } else if (input.classList.contains("activityDescription")) {
+                                currentObject.setBeginningDate(input.value);
+                            }
+                        }
+                        console.log("It's an Activity:", currentObject);
+                    });
+                    break;
+
+                case currentObject instanceof Task:
+                    console.log("It's a Task:", currentObject.getTitle());
+                    // task-specific logic
+                    break;
+
+                default:
+                    console.log("Unknown type");
+            }
+        });
+    }
+
+
 }
 export default GuiController;

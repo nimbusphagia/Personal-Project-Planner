@@ -35,41 +35,19 @@ class ProjectCard {
     }
     //METHODS
     populateDiv() {
-        const titleDiv = document.createElement("div");
-        titleDiv.classList.add("projectTitle");
-        titleDiv.textContent = this.#title;
-        this.#card.appendChild(titleDiv);
+        const titleInput = this.createInputNode(["projectTitle", "styledInput"], "projectTitle", this.#title, this.#card, true);
 
         const subTitleDiv = document.createElement("div");
         subTitleDiv.classList.add("projectSubtitle");
         this.#card.appendChild(subTitleDiv);
 
-        const authorDiv = document.createElement("div");
-        authorDiv.classList.add("author-div");
-        authorDiv.textContent = this.#author;
-        subTitleDiv.appendChild(authorDiv);
+        const authorInput = this.createInputNode(["projectAuthor", "styledInput"], "projectAuthor", this.#author, subTitleDiv, true);
+        const beginningInput = this.createInputNode(["projectStart", "styledInput"], "projectStart", this.#beginning, subTitleDiv, true);
+        const endingInput = this.createInputNode(["projectEnd", "styledInput"], "projectEnd", this.#end, subTitleDiv, true);
+        const colorInput = this.createInputNode(["projectColor", "styledInput"], "projectColor", this.#hexColor, subTitleDiv, true);
+        const descriptionArea = this.createInputNode(["projectDescription", "styledInput"], "projectDescription", this.#description, this.#card, true, true);
+        this.applyStyles(descriptionArea, true,);
 
-        const beginningDiv = document.createElement("div");
-        beginningDiv.classList.add("beginning-div");
-        beginningDiv.textContent = this.#beginning;
-        subTitleDiv.appendChild(beginningDiv);
-
-        const endingDiv = document.createElement("div");
-        endingDiv.classList.add("ending-div");
-        endingDiv.textContent = this.#end;
-        subTitleDiv.appendChild(endingDiv);
-
-        const colorDiv = document.createElement("div");
-        colorDiv.classList.add("color-div");
-        colorDiv.textContent = this.#hexColor;
-        subTitleDiv.appendChild(colorDiv);
-
-        const descriptionDiv = document.createElement("div");
-        descriptionDiv.classList.add("projectDescription");
-        descriptionDiv.textContent = this.#description;
-        descriptionDiv.style.fontStyle = "italic";
-        this.applyStyles(descriptionDiv, true,);
-        this.#card.appendChild(descriptionDiv);
 
         const activitiesDisplay = document.createElement("div");
         activitiesDisplay.classList.add("projectActivitiesParent");
@@ -101,6 +79,43 @@ class ProjectCard {
         this.applyStyles(completeBtn, true, true, this.#hexColor);
 
     }
+    createInputNode(classList, name, value, parent, appendChoice, textAreaChoice = false) {
+        const resize = (node) => {
+            node.style.width = node.value.length + 1 + "ch"
+        }
+        const assignValues = (node) => {
+            for (const className of classList) {
+                node.classList.add(className);
+            }
+            node.name = name;
+            node.value = value;
+            this.applyStyles(node, false, true);
+        }
+        if (textAreaChoice) {
+            const textArea = document.createElement("textarea");
+            assignValues(textArea);
+            textArea.maxLength = "200";
+            if (appendChoice) {
+                parent.appendChild(textArea);
+                textArea.addEventListener("input", () => {
+                    textArea.style.height = Math.min(textArea.scrollHeight, textArea.parentElement.clientHeight) + "px";
+                });
+                this.applyFocusStyle(textArea);
+            }
+            return textArea;
+        } else {
+            const inputNode = document.createElement("input");
+            assignValues(inputNode);
+            inputNode.maxLength = "30";
+            resize(inputNode);
+            if (appendChoice) {
+                parent.appendChild(inputNode);
+                inputNode.addEventListener("input", () => resize(inputNode));
+                this.applyFocusStyle(inputNode);
+            }
+            return inputNode;
+        }
+    }
     applyStyles(node, border, fontColor) {
         if (border) {
             node.style.border = `2.2px solid ${this.#hexColor}`;
@@ -109,6 +124,16 @@ class ProjectCard {
         if (fontColor) {
             node.style.color = this.#hexColor;
         }
+    }
+    applyFocusStyle(node) {
+        const dimColor = this.dimHexColor(this.#hexColor, 0.11);
+        node.addEventListener("focus", () => {
+            node.style.background = dimColor;
+        });
+
+        node.addEventListener("blur", () => {
+            node.style.background = "transparent";
+        });
     }
     renderActivity(activity, container) {
         const activityDiv = document.createElement("div");
@@ -120,5 +145,17 @@ class ProjectCard {
 
         container.appendChild(activityDiv);
     }
+    dimHexColor(hex, alpha = 0.5) {
+        // Remove "#" if present
+        hex = hex.replace(/^#/, "");
+
+        // Parse r,g,b
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
 }
 export default ProjectCard;

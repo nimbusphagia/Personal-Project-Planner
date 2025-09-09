@@ -19,7 +19,7 @@ class Project {
         this.#description = description;
         this.#activities = activities;
         this.addBtnActivity();
-        this.#status = "ongoing";
+        this.#status = "Ongoing";
         this.#cardColor = cardColor;
         this.#id = this.#generateId();
     }

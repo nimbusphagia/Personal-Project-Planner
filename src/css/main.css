@@ -15,7 +15,9 @@ body {
     --wBorder: 2.5px solid var(--aColor);
     --disColor: #00000074;
     --disBorder: 2px solid var(--disColor);
-    --shadow: 1px 1px 5px #bebebe;
+    --shadow:
+        /*1px 1px 5px #bebebe;*/
+        none;
     background-color: var(--bgColor);
     color: var(--aColor);
     height: 100vh;
@@ -52,6 +54,37 @@ a {
     border-radius: 3px;
     padding: 0.2em 0.6em;
 }
+
+input,
+textarea {
+    border: none;
+    background: transparent;
+    outline: none;
+    color: black;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 60px;
+    max-height: 120px;
+}
+
+.styledInput {
+    text-align: center;
+    font-weight: 550;
+    padding: 5px 0;
+    margin: 0;
+}
+
+input:focus,
+textarea:focus,
+[contenteditable="true"]:focus {
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: #a2bef65c;
+}
+
 
 .btn {
     text-decoration: none;
@@ -95,7 +128,7 @@ a {
 .sessionContainer {
     position: relative;
     height: 100%;
-    width: 100%;    
+    width: 100%;
 }
 
 .emptyGrid {
@@ -158,7 +191,7 @@ a {
 .projectContent {
     height: 100%;
     display: grid;
-    grid-template-rows: 1fr 0.5fr 1.5fr 5fr 0.5fr;
+    grid-template-rows: 0.7fr 0.5fr 0.9fr 5fr 0.5fr;
     text-align: center;
     font-weight: 550;
 }
@@ -168,21 +201,39 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: auto;
 }
 
 .projectSubtitle {
     display: flex;
     justify-content: center;
-    gap: 1em;
+    align-items: center;
+    gap: 10px;
     font-size: var(--fSmall);
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+    margin: auto;
 }
 
-.projectDescription {
+.projectSubtitle input {
+    min-width: 10px;
+    max-width: 50%;
+    padding: 4px 8px;
+
+}
+
+.projectDescription,
+.activityDescription {
     border: var(--mockBorder);
     font-size: var(--fSmall);
+    font-style: italic;
+    font-family: Helvetica, Arial;
     width: 90%;
     margin: 0 auto;
-    padding: 0.5em;
+    padding: 1em;
+    box-sizing: border-box;
+    overflow: auto;
 }
 
 .projectActivitiesParent {
@@ -248,9 +299,11 @@ a {
 .activityContent {
     height: 100%;
     display: grid;
-    grid-template-rows: 1fr 0.5fr 1.5fr 5fr 0.5fr;
+    grid-template-rows: 0.8fr 0.2fr 1fr 5fr 0.5fr;
     text-align: center;
+    align-items: center;
     font-weight: 550;
+    gap: 0;
 }
 
 .activityTitle {
@@ -258,22 +311,17 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: auto;
 }
 
-.activtyPriority {
+.activityPriority {
     display: flex;
     justify-content: center;
     gap: 1em;
     font-size: var(--fSmall);
+    margin: auto;
 }
 
-.activityDescription {
-    border: var(--mockBorder);
-    font-size: var(--fSmall);
-    width: 90%;
-    margin: 0 auto;
-    padding: 0.5em;
-}
 
 .activityTasksParent {
     border: var(--mockBorder);
@@ -310,7 +358,23 @@ a {
     padding: 0.5em;
     margin: auto;
 }
-
+/*TASK CARD*/
+.taskCard {
+    position: absolute;
+    left: 25%;
+    top: 5%;
+    padding: 20px;
+    background-color: var(--bgColor);
+}
+.taskContent {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 0.8fr 0.2fr 1fr 5fr 0.5fr;
+    text-align: center;
+    align-items: center;
+    font-weight: 550;
+    gap: 0;
+}
 /*SESSION CONTAINER*/
 .activeSession {
     grid-row: 1/4;
