@@ -26,6 +26,9 @@ class ActivityCard {
     setCard(card) {
         this.#card = card;
     }
+    getHexColor() {
+        return this.#hexColor;
+    }
     populateDiv() {
         const titleInput = this.createInputNode(["activityTitle", "styledInput"], "activityTitle", this.#title, this.#card, true);
         const priorityInput = this.createInputNode(["activityPriority", "styledInput"], "activityPriority", this.#priority, this.#card, true);
@@ -128,12 +131,25 @@ class ActivityCard {
         }
     }
     renderTask(task, container) {
-        const taskDiv = document.createElement("div");
-        taskDiv.classList.add("activityTask", "btn");
-        taskDiv.id = task.getProjectId() + "-" + task.getActivityId() + "-" + task.getId();
-        taskDiv.textContent = task.getTitle();
-
-        container.appendChild(taskDiv);
+        if (task.getId() == "BTN") {
+            const taskBtn = document.createElement("button");
+            taskBtn.type = "button";
+            taskBtn.textContent = "+";
+            taskBtn.classList.add("addTask", "btn");
+            taskBtn.id = task.getProjectId() + "-" + task.getActivityId() + "-" + task.getId();
+            this.applyStyles(taskBtn, true, true);
+            container.appendChild(taskBtn);
+            return
+        }
+        const taskInput = this.createInputNode(["activityTask", "styledInput"], "taskTitle", task.getTitle(), container, true);
+        taskInput.id = task.getProjectId() + "-" + task.getActivityId() + "-" + task.getId();
+        taskInput.addEventListener("focus", () => {
+            taskInput.style.border = "2.5px solid";
+        });
+        taskInput.addEventListener("blur", () => {
+            taskInput.style.border = "2px solid";
+            taskInput.style.fontWeight = "550";
+        });
     }
 }
 export default ActivityCard;

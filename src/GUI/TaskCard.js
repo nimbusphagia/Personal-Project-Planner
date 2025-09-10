@@ -30,13 +30,13 @@ class TaskCard {
         const deleteBtn = document.createElement("button");
         deleteBtn.setAttribute("type", "button");
         deleteBtn.classList.add("taskDeleteBtn", "btn");
-        deleteBtn.textContent = "Delete";
+        deleteBtn.textContent = "T";
         btnContainer.appendChild(deleteBtn);
 
         const completeBtn = document.createElement("button");
         completeBtn.setAttribute("type", "button");
         completeBtn.classList.add("taskCompleteBtn", "btn", "hover");
-        completeBtn.textContent = "Mark as complete";
+        completeBtn.textContent = "O";
         btnContainer.appendChild(completeBtn);
     }
     createInputNode(classList, name, value, parent, appendChoice, textAreaChoice = false) {

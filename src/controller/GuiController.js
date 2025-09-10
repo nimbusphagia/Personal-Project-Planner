@@ -13,7 +13,8 @@ class GuiController {
     #projectManager;
     #projectsMenu;
     #projects;
-    #currentCard;
+    #projectCard;
+    #activityCard;
     #session;
 
     constructor() {
@@ -23,12 +24,6 @@ class GuiController {
         this.#projects = this.#projectManager.getContainer();
         this.#session = new GuiSession("", this.#projectManager);
         document.querySelector(".sbBtnNew").addEventListener("click", () => { this.createNewProject() });
-    }
-    getCurrentCard() {
-        return this.#currentCard;
-    }
-    setCurrentCard(card) {
-        this.#currentCard = card;
     }
     start() {
         this.renderMenuContent();
@@ -102,38 +97,31 @@ class GuiController {
         return card;
     }
     showCard(type, card, id) {
-        let popUp;
+        const popUp = new SessionPopUp("75%", "80%", card.getCard(), "projectCard", card.getHexColor());;
         switch (type) {
             case "project":
-                popUp = new SessionPopUp("75%", "80%", card.getCard(), "projectCard", card.getHexColor());
                 popUp.renderWindow();
                 document.querySelector(".projectDeleteBtn").addEventListener("click", () => popUp.closeWindow());//CLOSE IF DELETED
                 const activityBtns = document.querySelectorAll(".projectActivity");
-                this.enableActivities(activityBtns);
+                this.enableActivities(activityBtns, popUp);
+
                 break;
             case "activity":
-                const projectId = id.split('-')[0];
-                const cardColor = this.getProjectColor(projectId);
-                popUp = new SessionPopUp("75%", "50%", card.getCard(), "activityCard", cardColor);
-                popUp.renderWindow();
-                const activityId = id.split('-')[1];
-                const taskBtns = document.querySelectorAll(".activityTask");
-                if (taskBtns) {
-                    this.enableTasks(taskBtns, projectId, activityId);
-                }
-
+                const color = card.getHexColor();
+                popUp.openSubWindow("activityCard", card.getCard(), color);
+                document.querySelector(".subWindow").style.borderColor = color;
                 if (document.querySelector(".activityBtnContainer")) {
-                    document.querySelector(".activityDeleteBtn").style.color = cardColor;
-                    document.querySelector(".activityDeleteBtn").style.borderColor = cardColor;
-                    document.querySelector(".activityCompleteBtn").style.color = cardColor;
-                    document.querySelector(".activityCompleteBtn").style.borderColor = cardColor;
+                    document.querySelector(".activityDeleteBtn").style.color = color;
+                    document.querySelector(".activityDeleteBtn").style.borderColor = color;
+                    document.querySelector(".activityCompleteBtn").style.color = color;
+                    document.querySelector(".activityCompleteBtn").style.borderColor = color;
                 }
                 break;
             case "task":
-                const idList = id.split("-");
-                console.log(idList);
-                const taskPopUp = popUp = new SessionPopUp("20%", "30%", card.getCard(), "taskCard", this.getProjectColor(idList[0]));
-                popUp.renderWindow();
+            /*const idList = id.split("-");
+            console.log(idList);
+            const taskPopUp = popUp = new SessionPopUp("20%", "30%", card.getCard(), "taskCard", this.getProjectColor(idList[0]));
+            popUp.renderWindow();*/
         }
 
     }
@@ -150,13 +138,14 @@ class GuiController {
     createNewActivity(project) {
         const emptyActivity = new Activity("Title", "Casual", "What does this activity accomplish?", []);
         project.addActivity(emptyActivity);
-        this.showCard("activity", this.createCard("activity", emptyActivity));
+        const aCard = this.createCard("activity", emptyActivity)
+        this.showCard("activity", aCard);
     }
     getProjectColor(projectId) {
         const index = this.#projectManager.getProjectIndexById(projectId);
         return this.#projects[index].getCardColor();
     }
-    enableActivities(btns) {
+    enableActivities(btns, popUp) {
         for (const btn of btns) {
             const actId = btn.id.split('-')[1];
             if (actId == "BTN") {
@@ -166,25 +155,29 @@ class GuiController {
             const pIndex = this.#projectManager.getProjectIndexById(projectId);
             const activity = this.#projects[pIndex].getActivityById(actId);
             const aCard = this.createCard("activity", activity);
+            const color = aCard.getHexColor();
 
-            btn.addEventListener("click", () => this.showCard("activity", aCard, btn.id));
+            btn.addEventListener("click", () => {
+                const activityWindow = popUp.openSubWindow("activityCard", aCard.getCard(), color);
+                document.querySelector(".subWindow").style.borderColor = color;
+                if (document.querySelector(".activityBtnContainer")) {
+                    document.querySelector(".activityDeleteBtn").style.color = color;
+                    document.querySelector(".activityDeleteBtn").style.borderColor = color;
+                    document.querySelector(".activityCompleteBtn").style.color = color;
+                    document.querySelector(".activityCompleteBtn").style.borderColor = color;
+                }
+            });
         }
     }
-    enableTasks(btns, projectId, activityId) {
-        for (const btn of btns) {
-            btn.style.borderColor = this.getProjectColor(projectId);
-            const ids = btn.id.split("-");
-            const taskId = ids[2];
-            if (taskId == "BTN") {
-                return
-            }
-            const pIndex = this.#projectManager.getProjectIndexById(projectId);
-            const activity = this.#projects[pIndex].getActivityById(activityId);
-            const task = activity.getTaskById(taskId);
-            const tCard = this.createCard("task", task);
-            this.colorTaskStatus(btn, task);
-            btn.addEventListener("click", () => this.showCard("task", tCard, btn.id));
+    editTask(activity, id, input) {
+        const [projectId, activityId, taskId] = id.split("-");
+        if (taskId == "BTN") {
+
+            return
         }
+        const task = activity.getTaskById(taskId);
+        task.setTitle(input);
+
     }
     changeTaskStatus(taskItem) {
         const ids = taskItem.id.split("-");
@@ -230,38 +223,43 @@ class GuiController {
     }
     enableInput() {
         document.body.addEventListener("click", (e) => {
-            const objectCard = document.querySelector("#sessionWindow");
-            if (!objectCard) return;
+            const projectCard = document.querySelector("#sessionWindow");
+            if (!projectCard) return;
 
-            const nodeId = objectCard.children[1]?.id;
-            if (!nodeId) return;
+            const projectId = projectCard.children[1]?.id;
+            if (!projectId) return;
 
-            const [projectId, activityId, taskId] = nodeId.split("-");
             let currentObject = null;
 
-            const project = projectId && this.#projectManager.getProjectById(projectId);
+            // --- Project ---
+            const project = this.#projectManager.getProjectById(projectId);
             if (!project) return;
-
             currentObject = project;
 
-            if (activityId) {
+            // --- Activity (if any open) ---
+            const activityCard = document.querySelector(".activityContent");
+            if (activityCard) {
+                const activityId = activityCard.id.split("-")[1];
                 const activity = project.getActivityById(activityId);
                 if (!activity) return;
-
                 currentObject = activity;
 
-                if (taskId) {
+                // --- Task (if any open) ---
+                const taskCard = document.querySelector(".taskContent");
+                if (taskCard) {
+                    const taskId = taskCard.id.split("-")[1]; // fixed
                     const task = activity.getTaskById(taskId);
                     if (!task) return;
-
                     currentObject = task;
                 }
             }
+
+            console.log("Current object:", currentObject);
             //AFTER FINDING CURRENTOBJECT
             switch (true) {
                 case currentObject instanceof Project:
                     // project-specific logic
-                    objectCard.addEventListener("input", (e) => {
+                    projectCard.addEventListener("input", (e) => {
                         const input = e.target;
                         if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
                             if (input.classList.contains("projectTitle")) {
@@ -281,7 +279,7 @@ class GuiController {
                         this.renderMenuContent();
                     });
                     //ENABLE PROJECT BUTTONS
-                    objectCard.addEventListener("click", (e) => {
+                    projectCard.addEventListener("click", (e) => {
                         const btn = e.target;
                         if (btn.tagName === "BUTTON") {
                             if (btn.classList.contains("projectDeleteBtn")) {
@@ -291,7 +289,9 @@ class GuiController {
                                 e.stopPropagation(); // 🔑 prevents duplicate handlers higher up
                                 const status = currentObject.getStatus();
                                 currentObject.setStatus(status === "Ongoing" ? "Completed" : "Ongoing");
-                                console.log("New status:", currentObject.getStatus());
+                                //console.log("New status:", currentObject.getStatus());
+                            } else if (btn.classList.contains("addActivity")) {
+                                this.createNewActivity(currentObject);
                             }
                         }
                     });
@@ -300,32 +300,60 @@ class GuiController {
 
                 case currentObject instanceof Activity:
                     // activity-specific logic
-                    objectCard.addEventListener("input", (e) => {
+                    const activityCard = projectCard.querySelector(".activityCard");
+                    activityCard.addEventListener("input", (e) => {
                         const input = e.target;
                         if (input.tagName === "INPUT" || input.tagName === "TEXTAREA") {
                             if (input.classList.contains("activityTitle")) {
                                 currentObject.setTitle(input.value);
+                                let nodeId = "#" + currentObject.getProjectId() + "-" + currentObject.getId();
+                                const activitiesContainer = document.querySelector(".projectActivityContainer");
+                                this.updateItemsContent(activitiesContainer, nodeId, currentObject.getTitle(), currentObject);
                             } else if (input.classList.contains("activityPriority")) {
-                                currentObject.setAuthor(input.value);
+                                currentObject.setPriority(input.value);
                             } else if (input.classList.contains("activityDescription")) {
-                                currentObject.setBeginningDate(input.value);
+                                currentObject.setDescription(input.value);
                             }
                         }
-                        console.log("It's an Activity:", currentObject);
+                        //console.log("It's an Activity:", currentObject);
                     });
-                    break;
+                    const taskContainer = activityCard.querySelector(".activityTasksContainer");
+                    taskContainer.addEventListener("click", (e) => {
+                        const input = e.target;
+                        if (e.target.classList.contains("activityTask")) {
+                            this.editTask(currentObject, e.target.id, input.value);
+                        }
 
-                case currentObject instanceof Task:
-                    console.log("It's a Task:", currentObject.getTitle());
-                    // task-specific logic
+                    })
                     break;
-
                 default:
                     console.log("Unknown type");
             }
         });
     }
+    updateItemsContent(itemContainer, id, updatedValue, obj) {
+        const item = itemContainer.querySelector(id);
+        if (!item) {
+            const newItem = document.createElement("div");
+            newItem.classList.add("projectActivity", "btn");
+            newItem.id = id.substring(1);
+            newItem.textContent = updatedValue;
 
+            this.styleActivityBtn(newItem, true, true, obj.getColor());
 
+            itemContainer.appendChild(newItem);
+            return;
+        }
+        item.textContent = updatedValue;
+    }
+    styleActivityBtn(node, border, fontColor, color) {
+        if (border) {
+            node.style.border = `2.2px solid ${color}`;
+            node.style.borderRadius = "5px";
+        }
+        if (fontColor) {
+            node.style.color = color;
+        }
+    }
 }
 export default GuiController;

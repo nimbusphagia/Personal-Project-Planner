@@ -136,6 +136,15 @@ class ProjectCard {
         });
     }
     renderActivity(activity, container) {
+        if (activity.getId() == "BTN") {
+            const activityBtn = document.createElement("button");
+            activityBtn.classList.add("addActivity", "projectActivity", "btn");
+            activityBtn.id = this.#id + "-" + activity.getId();
+            activityBtn.textContent = activity.getTitle();
+            this.applyStyles(activityBtn, true, true);
+            container.appendChild(activityBtn);
+            return;
+        }
         const activityDiv = document.createElement("div");
         activityDiv.classList.add("projectActivity", "btn");
         activityDiv.id = this.#id + "-" + activity.getId();
