@@ -35,6 +35,8 @@ class ProjectCard {
     }
     //METHODS
     populateDiv() {
+        this.#card.innerHTML = "";
+
         const titleInput = this.createInputNode(["projectTitle", "styledInput"], "projectTitle", this.#title, this.#card, true);
 
         const subTitleDiv = document.createElement("div");
@@ -54,11 +56,9 @@ class ProjectCard {
         const activitiesDiv = document.createElement("div");
         activitiesDiv.classList.add("projectActivityContainer");
         //render Activities
-        for (const act of this.#activities) {
-            this.renderActivity(act, activitiesDiv);
-        }
         activitiesDisplay.appendChild(activitiesDiv);
         this.#card.appendChild(activitiesDisplay);
+        this.renderAllActivities(activitiesDiv);
 
         const btnContainer = document.createElement("div");
         btnContainer.classList.add("projectBtnContainer");
@@ -78,6 +78,31 @@ class ProjectCard {
         btnContainer.appendChild(completeBtn);
         this.applyStyles(completeBtn, true, true, this.#hexColor);
 
+    }
+    renderAllActivities(container) {
+        container.innerHTML = "";
+        for (const act of this.#activities) {
+            this.renderActivity(act, container);
+        }
+    }
+    renderActivity(activity, container) {
+        if (activity.getId() == "BTN") {
+            const activityBtn = document.createElement("button");
+            activityBtn.classList.add("addActivity", "projectActivity", "btn");
+            activityBtn.id = this.#id + "-" + activity.getId();
+            activityBtn.textContent = activity.getTitle();
+            this.applyStyles(activityBtn, true, true);
+            container.appendChild(activityBtn);
+            return;
+        }
+        const activityDiv = document.createElement("div");
+        activityDiv.classList.add("projectActivity", "btn");
+        activityDiv.id = this.#id + "-" + activity.getId();
+        activityDiv.textContent = activity.getTitle();
+
+        this.applyStyles(activityDiv, true, true);
+
+        container.appendChild(activityDiv);
     }
     createInputNode(classList, name, value, parent, appendChoice, textAreaChoice = false) {
         const resize = (node) => {
@@ -134,25 +159,6 @@ class ProjectCard {
         node.addEventListener("blur", () => {
             node.style.background = "transparent";
         });
-    }
-    renderActivity(activity, container) {
-        if (activity.getId() == "BTN") {
-            const activityBtn = document.createElement("button");
-            activityBtn.classList.add("addActivity", "projectActivity", "btn");
-            activityBtn.id = this.#id + "-" + activity.getId();
-            activityBtn.textContent = activity.getTitle();
-            this.applyStyles(activityBtn, true, true);
-            container.appendChild(activityBtn);
-            return;
-        }
-        const activityDiv = document.createElement("div");
-        activityDiv.classList.add("projectActivity", "btn");
-        activityDiv.id = this.#id + "-" + activity.getId();
-        activityDiv.textContent = activity.getTitle();
-
-        this.applyStyles(activityDiv, true, true);
-
-        container.appendChild(activityDiv);
     }
     dimHexColor(hex, alpha = 0.5) {
         // Remove "#" if present

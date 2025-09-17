@@ -7,7 +7,7 @@ class SessionPopUp {
     #contentNode;
     #className;
     #overlay;
-    constructor(height, width, contentNode, className, hexBg = "#ffffff") {
+    constructor(height = "200px", width = "100px", contentNode = null, className = "", hexBg = "#000000ff") {
         this.#height = height;
         this.#width = width;
         this.#className = className;
@@ -33,6 +33,18 @@ class SessionPopUp {
     }
     setHexBg(hexBg) {
         this.#hexBg = hexBg;
+    }
+    getClassName() {
+        return this.#className;
+    }
+    setClassName(className) {
+        this.#className = className;
+    }
+    getContentNode() {
+        return this.#contentNode;
+    }
+    setContentNode(contentNode) {
+        this.#contentNode = contentNode;
     }
     //METHODS
     renderWindow() {
@@ -145,21 +157,21 @@ class SessionPopUp {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
     darkenHexColor(hex, alpha = 0.2, factor = 0.4) {
-    // Remove "#" if present
-    hex = hex.replace(/^#/, "");
+        // Remove "#" if present
+        hex = hex.replace(/^#/, "");
 
-    // Parse r,g,b
-    let r = parseInt(hex.substring(0, 2), 16);
-    let g = parseInt(hex.substring(2, 4), 16);
-    let b = parseInt(hex.substring(4, 6), 16);
+        // Parse r,g,b
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
 
-    // Darken by multiplying each channel by the factor (0 < factor < 1)
-    r = Math.round(r * factor);
-    g = Math.round(g * factor);
-    b = Math.round(b * factor);
+        // Darken by multiplying each channel by the factor (0 < factor < 1)
+        r = Math.round(r * factor);
+        g = Math.round(g * factor);
+        b = Math.round(b * factor);
 
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
 
 }
 export default SessionPopUp;
